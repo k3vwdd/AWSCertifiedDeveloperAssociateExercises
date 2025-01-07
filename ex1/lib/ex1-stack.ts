@@ -15,10 +15,11 @@ export class Ex1Stack extends cdk.Stack {
                 name: "title",
                 type: dynamodb.AttributeType.STRING,
             },
+            dynamoStream: dynamodb.StreamViewType.NEW_AND_OLD_IMAGES,
             removalPolicy: cdk.RemovalPolicy.DESTROY,
         });
 
-        const createMovie = new lambda.Function(this, "consumer", {
+        const createMovie = new lambda.Function(this, "CreateMovieFunction", {
             functionName: "create_movie",
             runtime: lambda.Runtime.NODEJS_20_X,
             timeout: cdk.Duration.seconds(30),
@@ -39,12 +40,12 @@ export class Ex1Stack extends cdk.Stack {
         const servicePolicy = new iam.Policy(this, "LabDynamoDBPolicy", {
             policyName: "LabLambdaExecutionRole",
             statements: [
-                new iam.PolicyStatement({
-                    effect: iam.Effect.ALLOW,
-                    actions: ["dynamodb:List*", "dynamodb:Describe*"],
-                    resources: [movieTable.tableArn],
-                    sid: "ListAndDescribe",
-                }),
+                //new iam.PolicyStatement({
+                //    effect: iam.Effect.ALLOW,
+                //    actions: ["dynamodb:List*", "dynamodb:Describe*"],
+                //    resources: [movieTable.tableArn],
+                //    sid: "ListAndDescribe",
+                //}),
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
                     actions: [
@@ -62,7 +63,7 @@ export class Ex1Stack extends cdk.Stack {
                         movieTable.tableArn,
                         `${movieTable.tableArn}/index/*`,
                     ],
-                    sid: "SpecificTable",
+                    sid: "FullTable",
                 }),
             ],
         });
