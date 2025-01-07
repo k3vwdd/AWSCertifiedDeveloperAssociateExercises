@@ -5,7 +5,7 @@ import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
-export class SqsFunStack extends cdk.Stack {
+export class Ex1Stack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
@@ -24,7 +24,7 @@ export class SqsFunStack extends cdk.Stack {
             timeout: cdk.Duration.seconds(30),
             memorySize: 128,
             handler: "create_movie.handler",
-            code: lambda.Code.fromAsset(path.join(__dirname, "../assets")),
+            code: lambda.Code.fromAsset(path.join(__dirname, "../assets/dist")),
             environment: {
                 TABLE_NAME: movieTable.tableName,
             },
@@ -36,28 +36,14 @@ export class SqsFunStack extends cdk.Stack {
             ),
         );
 
-
-        const servicePolicy = new iam.Policy(this, "ServicePolicy", {
+        const servicePolicy = new iam.Policy(this, "LabDynamoDBPolicy", {
             policyName: "LabLambdaExecutionRole",
             statements: [
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
-                    actions: [
-                        "sqs:ChangeMessageVisibility",
-                        "sqs:ChangeMessageVisibilityBatch",
-                        "sqs:DeleteMessage",
-                        "sqs:DeleteMessageBatch",
-                        "sqs:DeleteQueue",
-                        "sqs:GetQueueAttributes",
-                        "sqs:GetQueueUrl",
-                        "sqs:ListDeadLetterSourceQueues",
-                        "sqs:PurgeQueue",
-                        "sqs:ReceiveMessage",
-                        "sqs:SendMessage",
-                        "sqs:SendMessageBatch",
-                        "sqs:SetQueueAttributes",
-                    ],
-                    resources: ["*"],
+                    actions: ["dynamodb:List*", "dynamodb:Describe*"],
+                    resources: [movieTable.tableArn],
+                    sid: "ListAndDescribe",
                 }),
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
@@ -72,7 +58,11 @@ export class SqsFunStack extends cdk.Stack {
                         "dynamodb:Scan",
                         "dynamodb:UpdateItem",
                     ],
-                    resources: [movieTable.tableArn],
+                    resources: [
+                        movieTable.tableArn,
+                        `${movieTable.tableArn}/index/*`,
+                    ],
+                    sid: "SpecificTable",
                 }),
             ],
         });
@@ -85,4 +75,3 @@ export class SqsFunStack extends cdk.Stack {
         });
     }
 }
-
