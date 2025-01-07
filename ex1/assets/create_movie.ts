@@ -1,12 +1,7 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import { Context } from "aws-lambda";
-
-interface MovieTableSchema {
-    year: number;
-    title: string;
-    actors: string[];
-}
+import { MovieTableSchema } from "./types";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client); // automatically does my types
@@ -14,7 +9,7 @@ const docClient = DynamoDBDocumentClient.from(client); // automatically does my 
 export async function handler(event: MovieTableSchema, context: Context) {
     try {
         console.log("Received event:", JSON.stringify(event, null, 2));
-
+        // Since I"m sending my own test event data is custom to my sent data.. It's not from dynamodb
         //if (!event.Records || event.Records.length === 0) {
         //    throw new Error("No records found in the event");
         //}
@@ -32,9 +27,7 @@ export async function handler(event: MovieTableSchema, context: Context) {
                 year: year,
                 title: title,
                 info: {
-                    M: {
-                        actors: actors,
-                    },
+                    actors: actors,
                 },
             },
         });

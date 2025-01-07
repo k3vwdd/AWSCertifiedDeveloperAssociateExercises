@@ -1,25 +1,56 @@
 {
   "compilerOptions": {
+    // Runtime environment
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["es2020","DOM"],
-    "declaration": false,
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "node",
+
+    // Strict type checking
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": false,
-    "inlineSourceMap": true,
-    "inlineSources": true,
-    "experimentalDecorators": true,
-    "strictPropertyInitialization": false,
+
+    // Module resolution
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+
+    // Build options
     "outDir": "dist",
-    "rootDir": "./",
-    "typeRoots": ["./node_modules/@types"]
+    "rootDir": ".",
+    "sourceMap": true,
+    "removeComments": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Additional checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Type definitions
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
+    "types": [
+      "node",
+    ]
   },
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts"
+  ]
 }

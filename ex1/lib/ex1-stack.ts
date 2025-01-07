@@ -31,11 +31,62 @@ export class Ex1Stack extends cdk.Stack {
             },
         });
 
-        createMovie.role?.addManagedPolicy(
-            iam.ManagedPolicy.fromAwsManagedPolicyName(
-                "service-role/AWSLambdaBasicExecutionRole",
-            ),
-        );
+        const getMovie = new lambda.Function(this, "GetMovieFunction", {
+            functionName: "get_movie",
+            runtime: lambda.Runtime.NODEJS_20_X,
+            timeout: cdk.Duration.seconds(30),
+            memorySize: 128,
+            handler: "get_movie.handler",
+            code: lambda.Code.fromAsset(path.join(__dirname, "../assets/dist")),
+            environment: {
+                TABLE_NAME: movieTable.tableName,
+            },
+        });
+
+
+        const updateMovie = new lambda.Function(this, "UpdateMovieFunction", {
+            functionName: "update_movie",
+            runtime: lambda.Runtime.NODEJS_20_X,
+            timeout: cdk.Duration.seconds(30),
+            memorySize: 128,
+            handler: "update_movie.handler",
+            code: lambda.Code.fromAsset(path.join(__dirname, "../assets/dist")),
+            environment: {
+                TABLE_NAME: movieTable.tableName,
+            },
+        });
+
+        const deleteMovie = new lambda.Function(this, "DeleteMovieFunction", {
+            functionName: "delete_movie",
+            runtime: lambda.Runtime.NODEJS_20_X,
+            timeout: cdk.Duration.seconds(30),
+            memorySize: 128,
+            handler: "delete_movie.handler",
+            code: lambda.Code.fromAsset(path.join(__dirname, "../assets/dist")),
+            environment: {
+                TABLE_NAME: movieTable.tableName,
+            },
+        });
+
+
+
+        //createMovie.role?.addManagedPolicy(
+        //    iam.ManagedPolicy.fromAwsManagedPolicyName(
+        //        "service-role/AWSLambdaBasicExecutionRole",
+        //    ),
+        //);
+
+        //getMovie.role?.addManagedPolicy(
+        //    iam.ManagedPolicy.fromAwsManagedPolicyName(
+        //        "service-role/AWSLambdaBasicExecutionRole",
+        //    ),
+        //);
+
+        //updateMovie.role?.addManagedPolicy(
+        //    iam.ManagedPolicy.fromAwsManagedPolicyName(
+        //        "service-role/AWSLambdaBasicExecutionRole",
+        //    ),
+        //);
 
         const servicePolicy = new iam.Policy(this, "LabDynamoDBPolicy", {
             policyName: "LabLambdaExecutionRole",
@@ -46,6 +97,15 @@ export class Ex1Stack extends cdk.Stack {
                 //    resources: [movieTable.tableArn],
                 //    sid: "ListAndDescribe",
                 //}),
+                new iam.PolicyStatement({
+                    effect: iam.Effect.ALLOW,
+                    actions: [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                    ],
+                    resources: ["*"],
+                }),
                 new iam.PolicyStatement({
                     effect: iam.Effect.ALLOW,
                     actions: [
@@ -69,6 +129,9 @@ export class Ex1Stack extends cdk.Stack {
         });
 
         createMovie.role?.attachInlinePolicy(servicePolicy);
+        getMovie.role?.attachInlinePolicy(servicePolicy);
+        updateMovie.role?.attachInlinePolicy(servicePolicy);
+        deleteMovie.role?.attachInlinePolicy(servicePolicy);
 
         new cdk.CfnOutput(this, "TableName", {
             value: movieTable.tableName,
