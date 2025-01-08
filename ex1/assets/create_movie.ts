@@ -1,14 +1,15 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { PutCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { Context } from "aws-lambda";
-import { MovieTableSchema } from "./types";
+import { Context, APIGatewayProxyEvent } from "aws-lambda";
+//import { MovieTableSchema } from "./types";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client); // automatically does my types
 
-export async function handler(event: MovieTableSchema, context: Context) {
+//export async function handler(event: MovieTableSchema, context: Context) {
+export async function handler(event: APIGatewayProxyEvent, context: Context) {
     try {
-        console.log("Received event:", JSON.stringify(event, null, 2));
+        //console.log("Received event:", JSON.stringify(event, null, 2));
         // Since I"m sending my own test event data is custom to my sent data.. It's not from dynamodb
         //if (!event.Records || event.Records.length === 0) {
         //    throw new Error("No records found in the event");
@@ -17,9 +18,16 @@ export async function handler(event: MovieTableSchema, context: Context) {
         //const year = event.Records[0]?.dynamodb?.NewImage?.year?.S || "0";
         //const title = event.Records[0]?.dynamodb?.NewImage?.title?.S || "";
         //const actors = event.Records[0]?.dynamodb?.NewImage?.actors?.S || "";
-        const year = event.year || "0";
-        const title = event.title || "";
-        const actors = event.actors || "";
+        //const year = event.year || "0";
+        //const title = event.title || "";
+        //const actors = event.actors || "";
+
+        // now sending event data from an APIGatewayProxyEvent // sam local generate-event apigateway http-api-proxy // grab body
+
+        const body = JSON.parse(event.body || "{}");
+        const year = body.year || "0";
+        const title = body.title || "";
+        const actors = body.actors || "";
 
         const command = new PutCommand({
             TableName: "movies",

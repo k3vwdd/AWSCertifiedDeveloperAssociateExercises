@@ -1,9 +1,10 @@
-import * as cdk from "aws-cdk-lib";
-import * as lambda from "aws-cdk-lib/aws-lambda";
-import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
-import * as path from "path";
-import * as iam from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
+import * as cdk from "aws-cdk-lib";
+import * as path from "path";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as api from "aws-cdk-lib/aws-apigateway";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import * as iam from "aws-cdk-lib/aws-iam";
 
 export class Ex1Stack extends cdk.Stack {
     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -43,7 +44,6 @@ export class Ex1Stack extends cdk.Stack {
             },
         });
 
-
         const updateMovie = new lambda.Function(this, "UpdateMovieFunction", {
             functionName: "update_movie",
             runtime: lambda.Runtime.NODEJS_20_X,
@@ -68,7 +68,34 @@ export class Ex1Stack extends cdk.Stack {
             },
         });
 
+        const moviesApi = new api.RestApi(this, "moviesApi", {
+            restApiName: "Movies API",
+            description:
+                "Movies API that connects a web endpoint to several Lambda functions",
+            defaultCorsPreflightOptions: {
+                allowOrigins: api.Cors.ALL_ORIGINS,
+                allowMethods: api.Cors.ALL_METHODS,
+            },
+        });
 
+        const movieResource = moviesApi.root.addResource("Movies");
+        const titleResource = movieResource.addResource("{title}");
+
+        const createMovieIntegration = new api.LambdaIntegration(createMovie);
+        const updateMovieIntegration = new api.LambdaIntegration(updateMovie);
+        const deleteMovieIntegration = new api.LambdaIntegration(deleteMovie);
+        const getMovieIntegration = new api.LambdaIntegration(getMovie, {
+            requestTemplates: {
+                "application/json": JSON.stringify({
+                    title: "$input.params('title')",
+                }),
+            },
+        });
+
+        movieResource.addMethod("POST", createMovieIntegration);
+        movieResource.addMethod("PUT", updateMovieIntegration);
+        movieResource.addMethod("DELETE", deleteMovieIntegration);
+        titleResource.addMethod("GET", getMovieIntegration);
 
         //createMovie.role?.addManagedPolicy(
         //    iam.ManagedPolicy.fromAwsManagedPolicyName(

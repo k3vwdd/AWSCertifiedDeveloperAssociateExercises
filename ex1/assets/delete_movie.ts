@@ -1,16 +1,18 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DeleteCommand, DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import { Context } from "aws-lambda";
-import { MovieTableSchema } from "./types";
+import { Context, APIGatewayProxyEvent } from "aws-lambda";
+//import { MovieTableSchema } from "./types";
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
 
-export async function handler(event: MovieTableSchema, context: Context) {
+//export async function handler(event: MovieTableSchema, context: Context) {
+export async function handler(event: APIGatewayProxyEvent, context: Context) {
     try {
+        const body = JSON.parse(event.body || "{}");
         // @ts-expect-error
-        const year = event.year;
-        const title = event.title;
+        const year = body.year;
+        const title = body.title;
 
         const command = new DeleteCommand({
             TableName: "movies",
